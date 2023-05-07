@@ -45,6 +45,14 @@ Une autre erreur qui revient souvent est : `Cannot read properties of undefined 
 setFcContract(faucetContract(provider));
 ```
 
+
+## Contrat Faucet
+
+- Il y en a un disponible à l'adresse [ThirWeb Mumbai Faucet](https://thirdweb.com/mumbai/0x5649dFa98CC3923635E0D20783a4d5db0b491715/sources)
+
+- Un réalisé par Block Explorer [Create a Faucet contract Youtube](https://www.youtube.com/watch?v=jKW_0PQuIQw) avec un repo associé [erc20 tutorial block explorer](https://github.com/jspruance/erc20-tutorial-block-explorer).
+
+
 ## Suite
 
 Je n'en suis encore qu'au début et il y a déjà deux erreurs majeures.
