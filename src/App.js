@@ -7,6 +7,9 @@ function App() {
   const [walletAddress, setWalletAddress] = useState("");
   const [signer, setSigner] = useState();
   const [fcContract, setFcContract] = useState();
+  const [withdrawError, setWithdrawError] = useState("");
+  const [withdrawSuccess, setWithdrawSuccess] = useState(" ");
+  const [transactionData, setTransactionData] = useState("");
 
   useEffect(() => {
     getCurrentWalletConnected();
@@ -18,7 +21,7 @@ function App() {
       try {
         /* get provider*/
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-
+        console.log(provider.getBlockNumber());
         /* get accounts */
         const accounts = await provider.send("eth_requestAccounts", []);
 
@@ -26,7 +29,10 @@ function App() {
         setSigner(provider.getSigner());
 
         /* local contract instance */
-        setFcContract(faucetContract(provider));
+        const contract = faucetContract(provider);
+        setFcContract(contract);
+
+        console.log(contract);
 
         setWalletAddress(accounts[0]);
         console.log(accounts[0]);
@@ -52,6 +58,7 @@ function App() {
           setSigner(provider.getSigner());
           /* local contract instance */
           setFcContract(faucetContract(provider));
+          
           setWalletAddress(accounts[0]);
           console.log(accounts[0]);
         } else {
@@ -76,6 +83,30 @@ function App() {
       /* MetaMask is not installed */
       setWalletAddress("");
       console.log("Please install MetaMask");
+    }
+  };
+
+  const getFaucetHandler = async () => {
+    setWithdrawSuccess("");
+    setWithdrawError("");
+    try {
+      const fcContractWithSigner = fcContract.connect(signer);
+      const resp = await fcContractWithSigner.redeem();
+      console.log(resp);
+      let transactionHash;
+      if ("hash" in resp) {
+        transactionHash = resp.hash;
+      } else if ("transactionHash" in resp) {
+        transactionHash = resp.transactionHash;
+      } else {
+        throw new Error("Transaction hash not found in response");
+      }
+
+      setWithdrawSuccess("Transaction succeeded");
+      setTransactionData(transactionHash);
+    } catch (err) {
+      console.error(err.message);
+      setWithdrawError("Something happened wrong..." + err.message);
     }
   };
 
@@ -109,7 +140,7 @@ function App() {
         <div className="faucet-hero-body">
           <div className="container has-text-centered main-content">
             <h1 className="title is-1">Faucet</h1>
-            <p>Fast and reliable. 50 OCT/day.</p>
+            <p>You can get more than 100 TEST/day.</p>
             <div className="box address-box">
               <div className="columns">
                 <div className="column is-four-fifths">
@@ -117,10 +148,13 @@ function App() {
                     className="input is-medium"
                     type="text"
                     placeholder="Enter your wallet address (0x...)"
+                    defaultValue={walletAddress}
                   />
                 </div>
                 <div className="column">
-                  <button className="button is-link is-medium"
+                  <button
+                    className="button is-link is-medium"
+                    onClick={getFaucetHandler}
                   >
                     GET TOKENS
                   </button>
@@ -129,7 +163,11 @@ function App() {
               <article className="panel is-grey-darker">
                 <p className="panel-heading">Transaction Data</p>
                 <div className="panel-block">
-                  <p>transaction data</p>
+                  <p>
+                    {transactionData
+                      ? `Transaction hash: ${transactionData}`
+                      : "--"}
+                  </p>
                 </div>
               </article>
             </div>
